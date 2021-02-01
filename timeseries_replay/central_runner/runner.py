@@ -1,6 +1,8 @@
 import logging
+import datetime
 from datetime import timedelta
-
+from dateutil.parser import *
+import time
 # this is the main loop that triggers the data reads and data output
 #
 #
@@ -35,11 +37,35 @@ class CentralRunner:
     def run(self):
         """Main function that triggers the core logic
 
+        TODO break out the seconds check to release retrieved data into testable chunk
+
         """
+
+        datediff = datetime.datetime.now() - self.replay_start_time
+
+        for batch in self._batch_generator():
+            
+            self.db_system.query_data(batch[0], batch[1])
+            seconds_till_event = batch[0] + datediff - datetime.datetime.now()
+
+            while seconds_till_event.total_seconds() > 0:
+                time.sleep(1)
+                seconds_till_event = batch[0] + datediff - datetime.datetime.now()
+            
+            # release dataset to writer here
+
+
+    def _trigger_release(self, datediff, event_start_time):
+        """Function to trigger the release of an event to the output system
+        
+        we need to check 
+
+        """
+
 
         pass
 
-    def batch_generator(self):
+    def _batch_generator(self):
         """Setup batches to send to db for querying
 
         loops through and spits out the start and end times for us to fetch the data from the database 

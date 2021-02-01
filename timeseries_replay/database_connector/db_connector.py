@@ -20,12 +20,13 @@ class DataBaseConnector:
         self.end_date = end_date
 
     def startup_checks(self):
-        """Check the provided database session
+        """Startup checks to make sure that we have the right inputs
 
-        Since we intend to just connect to an arbritary database and table
-        we should check before initiating the dataloading
-        rather than check logic only in tests
-
+        Checks:
+            table exists
+            table column exists
+            table column covers the requested date period
+            start_date < end_date
         """
 
         # check timeseries table and column definition
@@ -45,46 +46,12 @@ class DataBaseConnector:
 
         assert self.start_date < self.end_date
 
+    def query_data(self, start, end):
 
+        grab_batch = 'select * from {0} where {1} >= "{2}" AND {1} < "{3}"'.format(self.table_name, self.time_column, start, end)
+        results = self.session.execute(grab_batch)
+        parsed_obj = [{key: value for key, value in row.items()} for row in results if row is not None]
+        
+        return parsed_obj
         
 
-
-class DBConnector:
-
-    def __init__(self, connection_string, table_name, schema, time_column, start_date, end_date):
-        
-        """Construct the database connection
-        Setup the connection a database and make sure that has the information that we need
-
-        Args:
-            connection_string (string): valid sqlalchemy connection string
-            table_name (string): name of the table that we will be replaying
-            schema (string): name of the db schema the table is in
-            time_column (string): name of the column holding the timedata for replay
-            start_date (): 
-
-        """
-
-        self.table_schema = schema
-        self.timeseries_table = table_name
-        self.time_column = time_column
-        self.start_date = start_date
-        self.end_date = end_date
-
-        self.engine = create_engine(connection_string)
-        self.db_metadata = MetaData()
-        #self.connection = self.engine.connect()
-
-    def startup_checks(self):
-
-        insp = inspect(self.engine) 
-        if insp.has_table(self.timeseries_table, schema=self.schema) is False:
-            raise ValueError("table: (0) doesn't exist".format(self.timeseries_table))
-
-
-
-        #timeseries_table = Table(self.timeseries_table, self.db_metadata, autoload=True, autoload_with=self.engine)
-        #columns = [c.name for c in timeseries_table.columns]
-
-        #if self.time_column not in columns:
-        #    raise ValueError("column: {0} doesn't exist in table: {1}".format(self.time_column, self.timeseries_table))
