@@ -2,7 +2,7 @@ import logging
 from sqlalchemy import create_engine, inspect, Table
 from sqlalchemy.schema import MetaData
 # database connector class to return a session for querying
-#
+from dateutil.parser import *
 
 logger = logging.getLogger(__name__)
 
@@ -28,11 +28,24 @@ class DataBaseConnector:
 
         """
 
-        # check timeseries column
-        table_check = 'select {0} from {1}'.format(self.time_column, self.table_name)
-        result_object = self.session.execute(table_check)
-        
-        
+        # check timeseries table and column definition
+        table_check = 'select count({0}) as row_count from {1}'.format(self.time_column, self.table_name)
+        table_result_object = self.session.execute(table_check)
+        parsed_col = [{key: value for key, value in row.items()} for row in table_result_object if row is not None]
+        assert(parsed_col[0]['row_count']>0)
+
+        min_max_dates = 'select min({0}) as min_date, \
+                        max({0}) as max_date from {1}'.format(self.time_column, self.table_name)
+        min_date_result_object = self.session.execute(min_max_dates).fetchall()
+        assert min_date_result_object is not None
+        parsed_obj = [{key: value for key, value in row.items()} for row in min_date_result_object if row is not None]
+        assert(parse(parsed_obj[0]['min_date'])<=self.start_date)
+        assert(parse(parsed_obj[0]['max_date'])>=self.start_date)
+        assert(parse(parsed_obj[0]['max_date'])>=self.end_date)
+
+        assert self.start_date < self.end_date
+
+
         
 
 
