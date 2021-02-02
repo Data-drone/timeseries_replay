@@ -40,18 +40,18 @@ class CentralRunner:
 
         loops through fetches data then send off to the output system
 
-        """
+        """ 
 
         date_diff = datetime.datetime.now() - self.replay_start_time
 
         for batch in self._batch_generator():
 
             result_set = self.db_system.query_data(batch[0], batch[1])
-            dataset = self._trigger_release(result_set, date_diff, batch, self.replay_rate)
+            dataset = self._trigger_release(result_set, date_diff, self.replay_start_time, batch, self.replay_rate)
             # release dataset to writer here
 
 
-    def _trigger_release(self, result_set, date_diff, batch, replay_rate):
+    def _trigger_release(self, result_set, date_diff, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
         
         Args:
@@ -61,12 +61,16 @@ class CentralRunner:
             batch (tuple(datetime, datetime)): tuple of dates to get in the  
 
         """
+        
+        offset = (batch[0] - replay_start_time).total_seconds() * replay_rate # 
+        current_offset = datetime.datetime.now() - replay_start_time ## This is wrong
+        batch_offset = timedelta(seconds=offset) + date_diff
+        
+        wait_time = (batch_offset - current_offset).total_seconds()
+        logger.info('batch_starts at: {0} we ar waiting for {1} secs'.format(batch[0], wait_time))
 
-        seconds_till_event = (batch[0] + date_diff) - datetime.datetime.now()
-        int_seconds = math.ceil(seconds_till_event.total_seconds())
-
-        if int_seconds > 0:
-            time.sleep(int_seconds)
+        if wait_time > 0:
+            time.sleep(wait_time)
 
         return result_set
 

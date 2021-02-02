@@ -4,6 +4,7 @@ from timeseries_replay.central_runner.runner import CentralRunner
 from timeseries_replay.database_connector.db_connector import DataBaseConnector
 import datetime
 import time
+import logging
 
 @pytest.mark.parametrize("replay_rate", [0.1, 1, 2, 3])
 def test_batch_generator(replay_rate):
@@ -42,6 +43,55 @@ def test_runner_with_db(dataset, time_start, time_diff):
 
     session = dataset
 
+    end_date = datetime.datetime(2020, 5, 17, 13, 0, 5)
+    replay_rate = 1.0 
+
+    db_connector_test = DataBaseConnector(session=session, 
+                                    table_name='timeseries_dataset', 
+                                    time_column='timestamp', 
+                                    start_date=time_start,
+                                    end_date=end_date)
+
+    runner = CentralRunner(db_connection=db_connector_test, 
+                            output_system='mock_output_systerm', 
+                            start_time=time_start, 
+                            end_time=end_date,
+                            replay_rate=replay_rate )
+
+
+    results_test = [
+        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 0), 'text': 'bob', 'value': 10.0},
+        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 1), 'text': 'cat', 'value':-10.0},
+        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 1), 'text': 'eat', 'value': 12.1}
+    ]
+    
+    # test that the trigger_release is working right
+    # expect 1
+    date_diff = datetime.datetime.now() - time_start
+    start = time.perf_counter()
+    
+    runner._trigger_release(result_set=results_test, date_diff=date_diff, replay_start_time=time_start, 
+    batch=(datetime.datetime(2021, 1, 1, 10, 1, 0), datetime.datetime(2021, 1, 1, 10, 1, 1)), 
+    replay_rate=replay_rate)
+    
+    end = time.perf_counter()
+
+    code_time = end - start
+    assert int(code_time) == time_diff
+
+
+def test_runner_full_loop(caplog, dataset):
+    """test the full loop
+
+    test dataset goes from datetime(2020, 5, 17, 13, 0, 0)
+    to datetime(2020, 5, 17, 13, 0, 5)
+    Five seconds total
+
+    """
+    caplog.set_level(logging.INFO)
+
+    session = dataset
+
     start_date = datetime.datetime(2020, 5, 17, 13, 0, 0)
     end_date = datetime.datetime(2020, 5, 17, 13, 0, 5)
     replay_rate = 1 
@@ -58,22 +108,11 @@ def test_runner_with_db(dataset, time_start, time_diff):
                             end_time=end_date,
                             replay_rate=replay_rate )
 
-
-    results_test = [
-        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 0), 'text': 'bob', 'value': 10.0},
-        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 1), 'text': 'cat', 'value':-10.0},
-        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 1), 'text': 'eat', 'value': 12.1}
-    ]
-    
-    # test that the trigger_release is working right
-    # expect 1
-    date_diff = datetime.datetime.now() - time_start
     start = time.perf_counter()
     
-    runner._trigger_release(result_set=results_test, date_diff=date_diff, 
-    batch=(datetime.datetime(2021, 1, 1, 10, 1, 0), datetime.datetime(2021, 1, 1, 10, 1, 1)))
-    
+    runner.run()
+
     end = time.perf_counter()
 
     code_time = end - start
-    assert int(code_time) == time_diff
+    assert int(code_time) == 4
