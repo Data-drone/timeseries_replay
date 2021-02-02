@@ -3,6 +3,7 @@ import datetime
 from datetime import timedelta
 from dateutil.parser import *
 import time
+import math
 # this is the main loop that triggers the data reads and data output
 #
 #
@@ -37,33 +38,37 @@ class CentralRunner:
     def run(self):
         """Main function that triggers the core logic
 
-        TODO break out the seconds check to release retrieved data into testable chunk
+        loops through fetches data then send off to the output system
 
         """
 
-        datediff = datetime.datetime.now() - self.replay_start_time
+        date_diff = datetime.datetime.now() - self.replay_start_time
 
         for batch in self._batch_generator():
-            
-            self.db_system.query_data(batch[0], batch[1])
-            seconds_till_event = batch[0] + datediff - datetime.datetime.now()
 
-            while seconds_till_event.total_seconds() > 0:
-                time.sleep(1)
-                seconds_till_event = batch[0] + datediff - datetime.datetime.now()
-            
+            result_set = self.db_system.query_data(batch[0], batch[1])
+            dataset = self._trigger_release(result_set, date_diff, batch, self.replay_rate)
             # release dataset to writer here
 
 
-    def _trigger_release(self, datediff, event_start_time):
+    def _trigger_release(self, result_set, date_diff, batch, replay_rate):
         """Function to trigger the release of an event to the output system
         
-        we need to check 
+        Args:
+            result_set (dict): the tuples that will be sent off into the output system
+            date_diff (datetime): The difference between the current time and the start of the dataset
+                                    we need to rebase the timestamps to release at the right intervals
+            batch (tuple(datetime, datetime)): tuple of dates to get in the  
 
         """
 
+        seconds_till_event = (batch[0] + date_diff) - datetime.datetime.now()
+        int_seconds = math.ceil(seconds_till_event.total_seconds())
 
-        pass
+        if int_seconds > 0:
+            time.sleep(int_seconds)
+
+        return result_set
 
     def _batch_generator(self):
         """Setup batches to send to db for querying

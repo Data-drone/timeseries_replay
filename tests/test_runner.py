@@ -3,6 +3,7 @@ import pytest
 from timeseries_replay.central_runner.runner import CentralRunner
 from timeseries_replay.database_connector.db_connector import DataBaseConnector
 import datetime
+import time
 
 @pytest.mark.parametrize("replay_rate", [0.1, 1, 2, 3])
 def test_batch_generator(replay_rate):
@@ -25,7 +26,12 @@ def test_batch_generator(replay_rate):
         if end != runner.replay_end_time:
             assert batch[1]-batch[0] == datetime.timedelta(seconds=runner.replay_rate) 
 
-def test_runner_with_db(dataset):
+test_pairs = [(datetime.datetime(2021, 1, 1, 10, 0, 59),1),
+                (datetime.datetime(2021, 1, 1, 10, 0, 58),2),
+                (datetime.datetime(2021, 1, 1, 10, 0, 57),3),]
+
+@pytest.mark.parametrize("time_start,time_diff", test_pairs)
+def test_runner_with_db(dataset, time_start, time_diff):
     """Adding in db_connector
 
     add in a DB Connector as the next step 
@@ -52,5 +58,22 @@ def test_runner_with_db(dataset):
                             end_time=end_date,
                             replay_rate=replay_rate )
 
-    runner.run()
 
+    results_test = [
+        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 0), 'text': 'bob', 'value': 10.0},
+        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 1), 'text': 'cat', 'value':-10.0},
+        {'timestamp': datetime.datetime(2021, 1, 1, 10, 1, 1), 'text': 'eat', 'value': 12.1}
+    ]
+    
+    # test that the trigger_release is working right
+    # expect 1
+    date_diff = datetime.datetime.now() - time_start
+    start = time.perf_counter()
+    
+    runner._trigger_release(result_set=results_test, date_diff=date_diff, 
+    batch=(datetime.datetime(2021, 1, 1, 10, 1, 0), datetime.datetime(2021, 1, 1, 10, 1, 1)))
+    
+    end = time.perf_counter()
+
+    code_time = end - start
+    assert int(code_time) == time_diff
