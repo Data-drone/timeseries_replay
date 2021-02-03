@@ -54,3 +54,29 @@ def dataset(setup_database):
     session.commit()
 
     yield session
+
+@pytest.fixture(scope='function')
+def big_dataset(setup_database):
+    """Load Dummy Data """
+
+    session = setup_database
+
+    #Create entries
+    t1 = [{'timestamp':datetime(2020, 5, 17, 13, 0, 0), 'textstring':'test1', 'numbervalue':45.1},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 1), 'textstring':'test2', 'numbervalue':12.3},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test31', 'numbervalue':0.11},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test32', 'numbervalue':0.12},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test33', 'numbervalue':0.14},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test34', 'numbervalue':0.11},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test35', 'numbervalue':0.1},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test36', 'numbervalue':12.11},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test37', 'numbervalue':3.11},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test38', 'numbervalue':1.11},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 3), 'textstring':'test39', 'numbervalue':4.11},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 5), 'textstring':'test4', 'numbervalue':-32},
+        {'timestamp':datetime(2020, 5, 17, 13, 0, 5), 'textstring':'test5', 'numbervalue':232}]
+
+    session.bulk_insert_mappings(Timeseries, t1)
+    session.commit()
+
+    yield session

@@ -85,12 +85,50 @@ def test_runner_full_loop(caplog, dataset):
 
     test dataset goes from datetime(2020, 5, 17, 13, 0, 0)
     to datetime(2020, 5, 17, 13, 0, 5)
-    Five seconds total
+    4 seconds total
 
     """
     caplog.set_level(logging.INFO)
 
     session = dataset
+
+    start_date = datetime.datetime(2020, 5, 17, 13, 0, 0)
+    end_date = datetime.datetime(2020, 5, 17, 13, 0, 5)
+    replay_rate = 1 
+
+    db_connector_test = DataBaseConnector(session=session, 
+                                    table_name='timeseries_dataset', 
+                                    time_column='timestamp', 
+                                    start_date=start_date,
+                                    end_date=end_date)
+
+    runner = CentralRunner(db_connection=db_connector_test, 
+                            output_system='mock_output_systerm', 
+                            start_time=start_date, 
+                            end_time=end_date,
+                            replay_rate=replay_rate )
+
+    start = time.perf_counter()
+    
+    runner.run()
+
+    end = time.perf_counter()
+
+    code_time = end - start
+    assert int(code_time) == 4
+
+
+def test_runner_full_loop_big(caplog, big_dataset):
+    """test the full loop
+
+    test dataset goes from datetime(2020, 5, 17, 13, 0, 0)
+    to datetime(2020, 5, 17, 13, 0, 5)
+    4 seconds total
+
+    """
+    caplog.set_level(logging.INFO)
+
+    session = big_dataset
 
     start_date = datetime.datetime(2020, 5, 17, 13, 0, 0)
     end_date = datetime.datetime(2020, 5, 17, 13, 0, 5)
