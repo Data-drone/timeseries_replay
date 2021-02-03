@@ -12,4 +12,4 @@ def test_console_publisher():
             {'timestamp': '2020-01-01 10:00:03', 'test1': 'D', 'testB': 3 },
             ]
 
-    publisher.publish(test)
+    #publisher.publish(test)

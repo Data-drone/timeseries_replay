@@ -2,9 +2,13 @@
 import pytest
 from timeseries_replay.central_runner.runner import CentralRunner
 from timeseries_replay.database_connector.db_connector import DataBaseConnector
+from timeseries_replay.publishers.console_publisher import DebugPublisher
 import datetime
 import time
 import logging
+import os
+
+os.makedirs('test_tmp', exist_ok=True)
 
 @pytest.mark.parametrize("replay_rate", [0.1, 1, 2, 3])
 def test_batch_generator(replay_rate):
@@ -119,19 +123,17 @@ def test_runner_full_loop(caplog, dataset):
 
 
 def test_runner_full_loop_big(caplog, big_dataset):
-    """test the full loop
+    """test the a bigger loop
 
-    test dataset goes from datetime(2020, 5, 17, 13, 0, 0)
-    to datetime(2020, 5, 17, 13, 0, 5)
-    4 seconds total
+    test a bigger fixture and check return tuples
 
     """
     caplog.set_level(logging.INFO)
 
     session = big_dataset
 
-    start_date = datetime.datetime(2020, 5, 17, 13, 0, 0)
-    end_date = datetime.datetime(2020, 5, 17, 13, 0, 5)
+    start_date = datetime.datetime(2020, 5, 17, 13, 0, 3)
+    end_date = datetime.datetime(2020, 5, 17, 13, 0, 6)
     replay_rate = 1 
 
     db_connector_test = DataBaseConnector(session=session, 
@@ -140,8 +142,10 @@ def test_runner_full_loop_big(caplog, big_dataset):
                                     start_date=start_date,
                                     end_date=end_date)
 
+    debug_publisher = DebugPublisher()
+
     runner = CentralRunner(db_connection=db_connector_test, 
-                            output_system='mock_output_systerm', 
+                            output_system=debug_publisher, 
                             start_time=start_date, 
                             end_time=end_date,
                             replay_rate=replay_rate )
@@ -153,4 +157,14 @@ def test_runner_full_loop_big(caplog, big_dataset):
     end = time.perf_counter()
 
     code_time = end - start
-    assert int(code_time) == 4
+    assert int(code_time) == 2
+
+    ## Test results
+    assert os.path.exists('test_tmp/17-05-2020_13-00-03')
+    assert os.path.exists('test_tmp/17-05-2020_13-00-05')
+
+    assert len(os.listdir('test_tmp/17-05-2020_13-00-03')) == 6
+    assert len(os.listdir('test_tmp/17-05-2020_13-00-05')) == 2
+
+import shutil
+shutil.rmtree('test_tmp')

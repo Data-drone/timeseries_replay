@@ -49,7 +49,8 @@ class CentralRunner:
             result_set = self.db_system.query_data(batch[0], batch[1])
             dataset = self._trigger_release(result_set, date_diff, self.replay_start_time, batch, self.replay_rate)
             # release dataset to writer here
-
+            if dataset is not None and type(self.output_system) != str:
+                self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
 
     def _trigger_release(self, result_set, date_diff, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
