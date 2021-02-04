@@ -10,6 +10,9 @@ import os
 
 os.makedirs('test_tmp', exist_ok=True)
 
+import shutil
+shutil.rmtree('test_tmp')
+
 @pytest.mark.parametrize("replay_rate", [0.1, 1, 2, 3])
 def test_batch_generator(replay_rate):
 
@@ -165,6 +168,3 @@ def test_runner_full_loop_big(caplog, big_dataset):
 
     assert len(os.listdir('test_tmp/17-05-2020_13-00-03')) == 6
     assert len(os.listdir('test_tmp/17-05-2020_13-00-05')) == 2
-
-import shutil
-shutil.rmtree('test_tmp')
