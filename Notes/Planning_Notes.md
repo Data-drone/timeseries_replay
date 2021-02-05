@@ -18,8 +18,8 @@ Considerations
 Starting a job:
 - start timestamp
 - end timestamp
-- replay rate
-- batch_size
+- replay rate - need to rethink I bit I think it is right to use it as a batch size
+- batch_size - using replay rate as the batch size for now
 
 2)
 Publisher to console log for now?
@@ -39,6 +39,31 @@ Central Runner:
 - Creates job list based on the replay rate / batch size
 - Sends the job to extract the dataset
 - Sends to the output system -> check offset diff -> and if <0 send 
+
+## Central Runner
+
+Setting up the intervals
+
+start time / end time / replay rate / current time
+
+timeinterval = end time - start time
+
+The length of each batch is the replay rate
+
+For 1 second we will have second by second batches
+
+What will we do if a batch is empty? skip?
+
+We are hitting timing issues with a writer that is writing json due to IO at the moment. 
+
+
+## Database Class
+
+We want to make it flexible and work with different databases
+Take db flavour specific code and leave that to sqlalchemy
+But sqlalchemy is focused around Object models as the backing db for apps
+
+Do we want to move the creation of the engine into the main execution loop rather than via the database class?
 
 ### Things to consider
 
