@@ -4,6 +4,7 @@ from datetime import timedelta
 from dateutil.parser import *
 import time
 import math
+import asyncio
 # this is the main loop that triggers the data reads and data output
 #
 #
@@ -46,11 +47,25 @@ class CentralRunner:
 
         for batch in self._batch_generator():
 
+            start_query = time.perf_counter()
             result_set = self.db_system.query_data(batch[0], batch[1])
+            end_query = time.perf_counter()
+
+            query_time = end_query - start_query
+            logger.info("query took {0}".format(query_time))
+            
             dataset = self._trigger_release(result_set, date_diff, self.replay_start_time, batch, self.replay_rate)
             # release dataset to writer here
             if dataset is not None and type(self.output_system) != str:
-                self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
+
+                start_output = time.perf_counter()
+                asyncio.run(self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S")))
+                end_output = time.perf_counter()
+
+                output_timer = end_output - start_output
+                logger.info("output took {0}".format(output_timer))
+            
+
 
     def _trigger_release(self, result_set, date_diff, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system

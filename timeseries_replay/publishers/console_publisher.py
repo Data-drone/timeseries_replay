@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import aiofiles
 from timeseries_replay.publishers.BasePublisher import BasePublisher
 
 logger = logging.getLogger(__name__)
@@ -29,11 +30,12 @@ class DebugPublisher(BasePublisher):
         
         logging.info('Initiating Debug Publisher')
         
-    def publish(self, obj, batch_name):
+    async def publish(self, obj, batch_name):
         """
         Notes:
 
         TODO writing the files seem to cause issues with latency
+        Examining AIO as an option
 
         """
 
@@ -44,5 +46,7 @@ class DebugPublisher(BasePublisher):
             folder = os.path.join('test_tmp', batch_name) 
             name = os.path.join(folder, str(int)+'.json')
             os.makedirs(folder, exist_ok=True)
-            with open(name, 'w') as fp:
-                json.dump(dictionary, fp)
+
+            async with aiofiles.open(name, 'w') as fp:
+                data = json.dumps(dictionary, indent = 1)
+                await fp.write(data)
