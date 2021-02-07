@@ -65,11 +65,14 @@ But sqlalchemy is focused around Object models as the backing db for apps
 
 Do we want to move the creation of the engine into the main execution loop rather than via the database class?
 
+## Writer Class
+
+Writing down to disk is slowing things down and we need to look at possibly doing that via asyncio
+
 ### Things to consider
 
 Returning Data back in a timely manner
 working out and timing the query to run next to get the next back of data
-
 How will we read and batch up the tasks?
-
 How are we maintaining the central clock and cadence
+
