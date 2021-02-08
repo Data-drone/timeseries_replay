@@ -10,8 +10,12 @@ this application will hopefully be able to do some of that
 
 ## Running Tests
 
+- TODO add how to trigger test in the right docker container from host commandline
+
 ```{bash}
 
-docker build -t test_timeseries .
+docker-compose -f docker_compose/kafka_testing.yml up
+# still need to test this
+# docker exec -it docker_compose_replay_service_1 /timeseries_replay/pytest
 
 ```

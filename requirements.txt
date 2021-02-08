@@ -4,4 +4,4 @@ python-dateutil==2.7.3
 pytest==6.2.2
 confluent_kafka
 pytest-postgresql
-psycopg2-binary=2.8.6
+psycopg2-binary==2.8.6
