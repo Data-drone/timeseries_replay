@@ -2,7 +2,9 @@
 
 Planning notes for what we will need to get this usable
 
-## MVP
+- TODO
+- Larger proper load test with non-trivial dataset
+## MVP - Alpha
 
 
 1)
@@ -27,7 +29,7 @@ Target is Kafka later on
 Also need to be able to push to files too
 
 
-Structure:
+### Structure:
 
 Connection Class -> read in initial settings / contain the connection object  
 
@@ -40,21 +42,16 @@ Central Runner:
 - Sends the job to extract the dataset
 - Sends to the output system -> check offset diff -> and if <0 send 
 
-## Central Runner
+### Central Runner
 
 Setting up the intervals
 
 start time / end time / replay rate / current time
-
 timeinterval = end time - start time
-
 The length of each batch is the replay rate
-
 For 1 second we will have second by second batches
-
 What will we do if a batch is empty? skip?
-
-We are hitting timing issues with a writer that is writing json due to IO at the moment. 
+We are hitting timing issues with a writer that is writing json due to IO at the moment - Fixed with AsyncIO 
 
 
 ## Database Class
@@ -63,11 +60,15 @@ We want to make it flexible and work with different databases
 Take db flavour specific code and leave that to sqlalchemy
 But sqlalchemy is focused around Object models as the backing db for apps
 
-Do we want to move the creation of the engine into the main execution loop rather than via the database class?
+Do we want to move the creation of the engine into the main execution loop rather than via the database class? - Yes done
+
+tested with SQLite / Postgres
 
 ## Writer Class
 
-Writing down to disk is slowing things down and we need to look at possibly doing that via asyncio
+Writing down to disk is slowing things down and we need to look at possibly doing that via asyncio - Done
+
+Publishers - Kafka - Done
 
 ### Things to consider
 
