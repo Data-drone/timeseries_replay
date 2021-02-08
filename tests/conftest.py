@@ -7,6 +7,10 @@ from sqlalchemy.orm import sessionmaker
 
 from datetime import datetime
 
+# postgres fixtures
+from pytest_postgresql import factories
+
+
 Base = declarative_base()
 
 class Timeseries(Base):
@@ -77,6 +81,42 @@ def big_dataset(setup_database):
         {'timestamp':datetime(2020, 5, 17, 13, 0, 5), 'textstring':'test5', 'numbervalue':232}]
 
     session.bulk_insert_mappings(Timeseries, t1)
+    session.commit()
+
+    yield session
+
+
+postgresql = factories.postgresql_noproc(host='db', port=5432, user='postgres', password='t3st1ng')
+
+@pytest.fixture(scope='function')
+def postgres_fixture(postgresql):
+    
+    connection = 'postgresql+psycopg2://postgres:t3st1ng@db:5432/postgres'
+    engine = create_engine(connection, echo=False)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
+
+@pytest.fixture(scope='function')
+def psql_dataset(postgres_fixture):
+    """Load Dummy Data """
+
+    session = postgres_fixture
+
+    #Create entries
+    t1 = Timeseries(timestamp=datetime(2020, 5, 17, 13, 0, 0), textstring='test1', numbervalue=45.1)
+    t2 = Timeseries(timestamp=datetime(2020, 5, 17, 13, 0, 1), textstring='test2', numbervalue=12.3)
+    t3 = Timeseries(timestamp=datetime(2020, 5, 17, 13, 0, 3), textstring='test3', numbervalue=0.11)
+    t4 = Timeseries(timestamp=datetime(2020, 5, 17, 13, 0, 5), textstring='test4', numbervalue=-32)
+    t5 = Timeseries(timestamp=datetime(2020, 5, 17, 13, 0, 5), textstring='test5', numbervalue=232)
+
+    session.add(t1)
+    session.add(t2)
+    session.add(t3)
+    session.add(t4)
+    session.add(t5)
     session.commit()
 
     yield session

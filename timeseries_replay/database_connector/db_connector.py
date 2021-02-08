@@ -40,9 +40,18 @@ class DataBaseConnector:
         min_date_result_object = self.session.execute(min_max_dates).fetchall()
         assert min_date_result_object is not None
         parsed_obj = [{key: value for key, value in row.items()} for row in min_date_result_object if row is not None]
-        assert(parse(parsed_obj[0]['min_date'])<=self.start_date)
-        assert(parse(parsed_obj[0]['max_date'])>=self.start_date)
-        assert(parse(parsed_obj[0]['max_date'])>=self.end_date)
+        
+        min_date_parse = parsed_obj[0]['min_date']
+        if type(min_date_parse) == str:
+            min_date_parse = parse(min_date_parse)
+
+        max_date_parse = parsed_obj[0]['max_date']
+        if type(max_date_parse) == str:
+            max_date_parse = parse(max_date_parse)
+
+        assert(min_date_parse<=self.start_date)
+        assert(max_date_parse>=self.start_date)
+        assert(max_date_parse>=self.end_date)
 
         assert self.start_date < self.end_date
 

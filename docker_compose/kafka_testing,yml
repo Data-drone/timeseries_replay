@@ -1,0 +1,30 @@
+version: "3.7"
+services:
+  db:
+    image: postgres:10.15
+    environment:
+      POSTGRES_PASSWORD: t3st1ng
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+  kafka:
+    image: wurstmeister/kafka:2.12-2.5.0
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_CREATE_TOPICS: "test_stream:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - 9094:9094
+    depends_on:
+      - zookeeper
+  replay_service:
+    build:
+      context: ..
+      dockerfile:  docker/timeseries_replay
+    volumes:
+      - ..:/code
+    depends_on:
+      - kafka
+  
