@@ -1,3 +1,11 @@
+
+"""Main Runner Module that coordinates everything
+
+The runner is the main scheduler and thread orchestrater for undertaking the replay
+
+
+"""
+
 import logging
 import datetime
 from datetime import timedelta
@@ -5,31 +13,30 @@ from dateutil.parser import *
 import time
 import math
 import asyncio
-# this is the main loop that triggers the data reads and data output
-#
-#
 
 logger = logging.getLogger(__name__)
 
 class CentralRunner:
-    # this class creates and manages the scheduling of the replay system
+    """Central Runner Class
+
+    Coordinates the running of the application to read data from a source system then stream it to an output device
+
+    Attributes:
+        db_connection (sqlalchemy.orm.session.Session): a db_connector object
+        output_system (BasePublisher): an output system object
+        start_time (datetime): start datetime for the replay
+        end_time (datetime): end datetime for the replay
+        replay_rate (float): the rate at which we should replay the data 1 is realtime 
+
+    Returns:
+        CentralRunner object for use in triggering jobs and running them
+
+    """
 
     def __init__(self, db_connection, output_system, 
                     start_time, end_time, replay_rate):
+        """Inits the class with the specified parameters"""
 
-        """Construct the central runner object
-        This calculates the batches and triggers the db reads 
-           and writing to the output system
-        
-        Args:
-            db_connection: a db_connector object
-            output_system: an output system object
-            start_time (datetime): start datetime for the replay
-            end_time (datetime): end datetime for the replay
-            replay_rate (float): the rate at which we should replay the data 1 is realtime 
-        """
-
-        
         self.db_system = db_connection
         self.output_system = output_system
         self.replay_start_time = start_time
@@ -39,7 +46,10 @@ class CentralRunner:
     def run(self):
         """Main function that triggers the core logic
 
-        loops through fetches data then send off to the output system
+        Generates batches based on the replay rate and the start / end date that we wish to replay
+        Depending on the start time of the batch, the main loop may pause to wait before pushing the batch to be published
+        Batches get passed to the Database session for querying
+        Query Results get passed to the output system to publish
 
         """ 
 
@@ -65,8 +75,6 @@ class CentralRunner:
                 output_timer = end_output - start_output
                 logger.info("output took {0}".format(output_timer))
             
-
-
     def _trigger_release(self, result_set, date_diff, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
         
