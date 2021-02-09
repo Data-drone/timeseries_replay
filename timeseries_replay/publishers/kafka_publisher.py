@@ -1,3 +1,8 @@
+"""Kafka Publisher
+
+Publisher that writes to a kafka topic leveraging the confluent_kafka library
+
+"""
 import json
 import logging
 import os
@@ -8,6 +13,14 @@ from confluent_kafka import Producer
 logger = logging.getLogger(__name__)
 
 class KafkaPublisher(BasePublisher):
+    """Kafka Publisher
+
+    Initialises a kafka producer
+    
+    Args:
+        bootstrap_servers(str): a string of kafka brokers in the format <kafka_broker>:<kafka_port>
+        topic(str): Kafka topic to write to we assume that this has been created already
+    """
 
     def __init__(self, bootstrap_servers, topic):
         
@@ -15,8 +28,8 @@ class KafkaPublisher(BasePublisher):
         self.producer = Producer({'bootstrap.servers': bootstrap_servers})
         self.topic = topic
 
-    def delivery_report(self, err, msg):
-        """ Called once for each message produced to indicate delivery result.
+    def _delivery_report(self, err, msg):
+        """Called once for each message produced to indicate delivery result.
             Triggered by poll() or flush(). """
         if err is not None:
             logger.error('Message delivery failed: {}'.format(err))
@@ -24,9 +37,16 @@ class KafkaPublisher(BasePublisher):
             logger.info('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
         
     def publish(self, obj, batch_name):
+        """Publish Command
+
+        Args:
+            obj(list(dict)): a list of dicts to be published tuple by tuple
+            batch_name(str): Does nothing in this case
+
+        """
         for dictionary in obj:
             result = json.dumps(dictionary)
 
             self.producer.poll(0)
-            self.producer.produce(self.topic, result.encode('utf-8'), callback=self.delivery_report)
+            self.producer.produce(self.topic, result.encode('utf-8'), callback=self._delivery_report)
         self.producer.flush()

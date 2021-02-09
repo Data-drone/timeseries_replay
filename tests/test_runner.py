@@ -2,7 +2,7 @@
 import pytest
 from timeseries_replay.central_runner.runner import CentralRunner
 from timeseries_replay.database_connector.db_connector import DataBaseConnector
-from timeseries_replay.publishers.console_publisher import DebugPublisher
+from timeseries_replay.publishers.console_publisher import FilePublisher
 import datetime
 import time
 import logging
@@ -143,7 +143,7 @@ def test_runner_full_loop_big(caplog, big_dataset):
                                     start_date=start_date,
                                     end_date=end_date)
 
-    debug_publisher = DebugPublisher()
+    debug_publisher = FilePublisher()
 
     runner = CentralRunner(db_connection=db_connector_test, 
                             output_system=debug_publisher, 

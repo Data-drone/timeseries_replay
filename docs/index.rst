@@ -14,6 +14,7 @@ Contents:
 
    Quickstart <quickstart.rst>
    API <api.rst>
+   Testing <testing.rst> 
 
 
 Indices and tables
