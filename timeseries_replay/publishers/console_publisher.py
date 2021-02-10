@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import aiofiles
+import datetime
 from timeseries_replay.publishers.BasePublisher import BasePublisher
 
 logger = logging.getLogger(__name__)
@@ -50,6 +51,10 @@ class FilePublisher(BasePublisher):
         self.output_folder = output_folder
         
         logging.info('Initiating Debug Publisher')
+
+    def json_cleaner(self, item):
+        if isinstance(item, datetime.datetime):
+            return item.__str__()
         
     async def publish(self, obj, batch_name):
         """Publish Data
@@ -71,5 +76,5 @@ class FilePublisher(BasePublisher):
             os.makedirs(folder, exist_ok=True)
 
             async with aiofiles.open(name, 'w') as fp:
-                data = json.dumps(dictionary, indent = 1)
+                data = json.dumps(dictionary, indent = 1, default=self.json_cleaner)
                 await fp.write(data)

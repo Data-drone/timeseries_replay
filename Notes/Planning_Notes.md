@@ -3,7 +3,8 @@
 Planning notes for what we will need to get this usable
 
 - TODO
-    - Larger proper load test with non-trivial dataset
+    - Larger proper load test with non-trivial dataset - blocked by AsyncIO publishing
+    - Tackle using AsyncIO for publishing
 
 ## MVP - Alpha
 
