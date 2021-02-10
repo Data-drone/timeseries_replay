@@ -81,6 +81,8 @@ class CentralRunner:
             
     def _trigger_release(self, result_set, code_start, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
+
+        TODO This currently doesn't seem to work properly
         
         Args:
             result_set (dict): the tuples that will be sent off into the output system
@@ -93,16 +95,14 @@ class CentralRunner:
         """
         
         # need to divide by the replay to make sure 2 to double time
+        # seconds offset from the replay start 
         batch_offset = (batch[0] - replay_start_time).total_seconds() / replay_rate  
 
         # current offset is what the replay time at the time in this trigger operation
-        # does current offset need to adjust to replay rate?
-        #logger.debug('our date diff is giving {0}, value is {1}'.format(type(diff_result), diff_result))
-        
-        current_offset = (datetime.datetime.now() - code_start).total_seconds() / replay_rate
-        # batch offset is 
-        #batch_offset = timedelta(seconds=offset) + date_diff 
-        
+        # does current offset need to adjust to replay rate? no it doesn't
+        current_offset = (datetime.datetime.now() - code_start).total_seconds() # / replay_rate        
+        logger.info('batch_offset is: {0} current_offset is: {1}'.format(batch_offset, current_offset))
+
         wait_time = (batch_offset - current_offset)
 
         logger.info('batch_starts at: {0} we are waiting for {1} secs'.format(batch[0], wait_time))

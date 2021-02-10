@@ -40,6 +40,7 @@ def test_trigger_release(replay_rate):
 
     assert end_time > start_time
     assert (end_time - start_time).total_seconds() > 0
+    period_duration = (end_time - start_time).total_seconds()
 
     # test basic functionality of the central runner batch generator
     runner = CentralRunner(db_connection='mock_connection', 
@@ -48,16 +49,21 @@ def test_trigger_release(replay_rate):
                             end_time=end_time,
                             replay_rate=replay_rate )
 
-    start_time = datetime.datetime.now()
+    code_start_time = datetime.datetime.now()
 
     test_tuple = [{'mock_result'}]
 
     code_start = time.perf_counter()
+    
     for batch in runner._batch_generator():
-        dataset = runner._trigger_release(test_tuple, start_time, runner.replay_start_time, 
-                                        batch, runner.replay_rate)
+        dataset = runner._trigger_release(result_set=test_tuple, 
+                                            code_start=code_start_time, 
+                                        replay_start_time=runner.replay_start_time, 
+                                        batch=batch, 
+                                        replay_rate=runner.replay_rate)
+    
     code_end = time.perf_counter()
 
-    actual_length = int(code_end - code_start)
-    target_length = (end_time - start_time).total_seconds()/replay_rate
+    actual_length = code_end - code_start
+    target_length = period_duration/replay_rate
     assert actual_length  ==  target_length
