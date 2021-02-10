@@ -150,7 +150,7 @@ def test_runner_full_loop_big(caplog, big_dataset):
 #import shutil
 #shutil.rmtree('test_tmp/*')
 
-@pytest.mark.parametrize("replay_rate", [1, 2, 3])
+@pytest.mark.parametrize("replay_rate", [1, 2])
 def test_runner_large_file(caplog, replay_rate):
     """
     Test system under load from the large test parquet
@@ -162,7 +162,50 @@ def test_runner_large_file(caplog, replay_rate):
     path = 'test_data/test_data.parquet'
     time_column = 'requesttimestamp'
     start_date = datetime.datetime(2020, 7, 10, 0, 1, 0)
-    end_date = datetime.datetime(2020, 7, 10, 0, 2, 0)
+    end_date = datetime.datetime(2020, 7, 10, 0, 3, 0)
+    replay_rate = replay_rate
+    bootstrap_servers = 'kafka:9092'
+    topic = 'test_stream_2'
+
+    fileconnector = ParquetFileConnector(path=path, time_column=time_column, 
+                                    start_date=start_date, end_date=end_date)
+
+    fileconnector.startup_checks()
+
+    publisher = KafkaPublisher(
+        bootstrap_servers=bootstrap_servers,
+        topic=topic
+    )
+
+    runner = CentralRunner(db_connection=fileconnector, 
+                            output_system=publisher, 
+                            start_time=start_date, 
+                            end_time=end_date,
+                            replay_rate=replay_rate )
+
+    start = time.perf_counter()
+    
+    runner.run()
+
+    end = time.perf_counter()
+
+    code_time = end - start
+    assert int(code_time) == (end_date - start_date).total_seconds() * replay_rate
+
+
+@pytest.mark.parametrize("replay_rate", [4, 8])
+def test_runner_long_duration(caplog, replay_rate):
+    """
+    Test system under load from the large test parquet
+
+    """
+
+    caplog.set_level(logging.INFO)
+
+    path = 'test_data/test_data.parquet'
+    time_column = 'requesttimestamp'
+    start_date = datetime.datetime(2020, 7, 10, 0, 1, 0)
+    end_date = datetime.datetime(2020, 7, 10, 0, 10, 0)
     replay_rate = replay_rate
     bootstrap_servers = 'kafka:9092'
     topic = 'test_stream_2'
