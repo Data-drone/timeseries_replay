@@ -8,7 +8,6 @@ The runner is the main scheduler and thread orchestrater for undertaking the rep
 
 import logging
 import datetime
-from datetime import timedelta
 from dateutil.parser import *
 import time
 import math
@@ -24,8 +23,8 @@ class CentralRunner:
     Attributes:
         db_connection (sqlalchemy.orm.session.Session): a db_connector object
         output_system (BasePublisher): an output system object
-        start_time (datetime): start datetime for the replay
-        end_time (datetime): end datetime for the replay
+        start_time (datetime.datetime): start datetime.datetime for the replay
+        end_time (datetime.datetime): end datetime.datetime for the replay
         replay_rate (float): the rate at which we should replay the data 1 is realtime 
 
     Returns:
@@ -42,6 +41,7 @@ class CentralRunner:
         self.replay_start_time = start_time
         self.replay_end_time = end_time
         self.replay_rate = replay_rate
+        self.batch_size = replay_rate
         
     def run(self):
         """Main function that triggers the core logic
@@ -55,7 +55,7 @@ class CentralRunner:
 
         """ 
 
-        date_diff = datetime.datetime.now() - self.replay_start_time
+        code_start = datetime.datetime.now()
 
         for batch in self._batch_generator():
 
@@ -66,8 +66,10 @@ class CentralRunner:
             query_time = end_query - start_query
             logger.info("query took {0}".format(query_time))
             
-            dataset = self._trigger_release(result_set, date_diff, self.replay_start_time, batch, self.replay_rate)
+            dataset = self._trigger_release(result_set, code_start, self.replay_start_time, 
+                                                batch, self.replay_rate)
             # release dataset to writer here
+            # we might need to adjust this to keep running with none?
             if dataset is not None and type(self.output_system) != str:
 
                 start_output = time.perf_counter()
@@ -77,23 +79,33 @@ class CentralRunner:
                 output_timer = end_output - start_output
                 logger.info("output took {0}".format(output_timer))
             
-    def _trigger_release(self, result_set, date_diff, replay_start_time, batch, replay_rate):
+    def _trigger_release(self, result_set, code_start, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
         
         Args:
             result_set (dict): the tuples that will be sent off into the output system
-            date_diff (datetime): The difference between the current time and the start of the dataset
+            code_start (datetime.datetime): The difference between the current time and the start of the dataset
                                     we need to rebase the timestamps to release at the right intervals
-            batch (tuple(datetime, datetime)): tuple of dates to get in the  
+            replay_start_time (datetime.datetime):  
+            batch (tuple(datetime.datetime, datetime.datetime)): tuple of dates in the batch
+            replay_rate (float): rate at which to replay the data back
 
         """
         
-        offset = (batch[0] - replay_start_time).total_seconds() * replay_rate # 
-        current_offset = datetime.datetime.now() - replay_start_time ## This is wrong
-        batch_offset = timedelta(seconds=offset) + date_diff
+        # need to divide by the replay to make sure 2 to double time
+        batch_offset = (batch[0] - replay_start_time).total_seconds() / replay_rate  
+
+        # current offset is what the replay time at the time in this trigger operation
+        # does current offset need to adjust to replay rate?
+        #logger.debug('our date diff is giving {0}, value is {1}'.format(type(diff_result), diff_result))
         
-        wait_time = (batch_offset - current_offset).total_seconds()
-        logger.info('batch_starts at: {0} we ar waiting for {1} secs'.format(batch[0], wait_time))
+        current_offset = (datetime.datetime.now() - code_start).total_seconds() / replay_rate
+        # batch offset is 
+        #batch_offset = timedelta(seconds=offset) + date_diff 
+        
+        wait_time = (batch_offset - current_offset)
+
+        logger.info('batch_starts at: {0} we are waiting for {1} secs'.format(batch[0], wait_time))
 
         if wait_time > 0:
             time.sleep(wait_time)
@@ -112,7 +124,7 @@ class CentralRunner:
         batch_start = self.replay_start_time
         while batch_start < self.replay_end_time:
             
-            batch_end = min(batch_start + timedelta(seconds=self.replay_rate), 
+            batch_end = min(batch_start + datetime.timedelta(seconds=self.batch_size), 
                             self.replay_end_time)
             
             logger.debug("Yielding Batch {0}, {1}".format(batch_start, batch_end))

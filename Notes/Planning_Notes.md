@@ -3,9 +3,9 @@
 Planning notes for what we will need to get this usable
 
 - TODO
-- Larger proper load test with non-trivial dataset
-## MVP - Alpha
+    - Larger proper load test with non-trivial dataset
 
+## MVP - Alpha
 
 1)
 Read from SQLAlchemy DB with timestamp column
@@ -53,6 +53,13 @@ For 1 second we will have second by second batches
 What will we do if a batch is empty? skip?
 We are hitting timing issues with a writer that is writing json due to IO at the moment - Fixed with AsyncIO 
 
+#### Central Runner Logic rethink
+
+Timeline
+
+start_date ------------------- end_date
+
+datetime_now ................. new_end
 
 ## Database Class
 
