@@ -31,7 +31,7 @@ def test_batch_generator(replay_rate):
             assert batch[1]-batch[0] == datetime.timedelta(seconds=runner.replay_rate) 
 
 # WIP
-@pytest.mark.parametrize("replay_rate", [1, 2, 3])
+@pytest.mark.parametrize("replay_rate", [0.5, 1, 2, 3, 4])
 def test_trigger_release(replay_rate):
     # test that we are triggering releasing of datasets to output properly
     replay_rate = replay_rate
@@ -40,7 +40,7 @@ def test_trigger_release(replay_rate):
 
     assert end_time > start_time
     assert (end_time - start_time).total_seconds() > 0
-    period_duration = (end_time - start_time).total_seconds()
+    period_duration = (end_time - datetime.timedelta(seconds=replay_rate) - start_time).total_seconds()
 
     # test basic functionality of the central runner batch generator
     runner = CentralRunner(db_connection='mock_connection', 
@@ -66,4 +66,4 @@ def test_trigger_release(replay_rate):
 
     actual_length = code_end - code_start
     target_length = period_duration/replay_rate
-    assert actual_length  ==  target_length
+    assert abs(actual_length - target_length) < 1
