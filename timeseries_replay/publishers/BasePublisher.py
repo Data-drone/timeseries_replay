@@ -3,5 +3,5 @@ class BasePublisher:
     def __init__():
         pass
 
-    def publish(self, obj, batch_name):
+    async def publish(self, obj, batch_name):
         pass

@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import aiofiles
+import datetime
 from timeseries_replay.publishers.BasePublisher import BasePublisher
 from confluent_kafka import Producer
 
@@ -16,6 +17,8 @@ class KafkaPublisher(BasePublisher):
     """Kafka Publisher
 
     Initialises a kafka producer
+
+    #TODO convert to async publisher
     
     Args:
         bootstrap_servers(str): a string of kafka brokers in the format <kafka_broker>:<kafka_port>
@@ -34,8 +37,12 @@ class KafkaPublisher(BasePublisher):
         if err is not None:
             logger.error('Message delivery failed: {}'.format(err))
         else:
-            logger.info('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
+            logger.debug('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
         
+    def json_cleaner(self, item):
+        if isinstance(item, datetime.datetime):
+            return item.__str__()
+
     def publish(self, obj, batch_name):
         """Publish Command
 
@@ -45,7 +52,7 @@ class KafkaPublisher(BasePublisher):
 
         """
         for dictionary in obj:
-            result = json.dumps(dictionary)
+            result = json.dumps(dictionary, default=self.json_cleaner)
 
             self.producer.poll(0)
             self.producer.produce(self.topic, result.encode('utf-8'), callback=self._delivery_report)

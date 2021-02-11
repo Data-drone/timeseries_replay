@@ -73,7 +73,8 @@ class CentralRunner:
             if dataset is not None and type(self.output_system) != str:
 
                 start_output = time.perf_counter()
-                asyncio.run(self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S")))
+                self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
+                #asyncio.run(self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S")))
                 end_output = time.perf_counter()
 
                 output_timer = end_output - start_output
@@ -82,8 +83,6 @@ class CentralRunner:
     def _trigger_release(self, result_set, code_start, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
 
-        TODO This currently doesn't seem to work properly
-        
         Args:
             result_set (dict): the tuples that will be sent off into the output system
             code_start (datetime.datetime): The difference between the current time and the start of the dataset
