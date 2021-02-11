@@ -57,7 +57,7 @@ def test_trigger_release(replay_rate):
     
     for batch in runner._batch_generator():
         dataset = runner._trigger_release(result_set=test_tuple, 
-                                            code_start=code_start_time, 
+                                        code_start=code_start_time, 
                                         replay_start_time=runner.replay_start_time, 
                                         batch=batch, 
                                         replay_rate=runner.replay_rate)

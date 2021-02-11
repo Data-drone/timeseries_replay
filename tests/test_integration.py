@@ -190,7 +190,11 @@ def test_runner_large_file(caplog, replay_rate):
     end = time.perf_counter()
 
     code_time = end - start
-    assert int(code_time) == (end_date - start_date).total_seconds() * replay_rate
+
+    period_duration = (end_date - datetime.timedelta(seconds=replay_rate) - start_date).total_seconds()
+
+    assert abs(code_time - period_duration/replay_rate) < 1
+    #assert int(code_time) == (end_date - start_date).total_seconds() * replay_rate
 
 
 @pytest.mark.parametrize("replay_rate", [4, 8])
@@ -233,6 +237,9 @@ def test_runner_long_duration(caplog, replay_rate):
     end = time.perf_counter()
 
     code_time = end - start
-    assert int(code_time) == (end_date - start_date).total_seconds() * replay_rate
 
+    period_duration = (end_date - datetime.timedelta(seconds=replay_rate) - start_date).total_seconds()
 
+    assert abs(code_time - period_duration/replay_rate) < 1
+
+    #assert int(code_time) == (end_date - start_date).total_seconds() * replay_rate
