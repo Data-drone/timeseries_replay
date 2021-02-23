@@ -8,6 +8,20 @@ Sometimes it maybe useful to take an existing events table with timestamps and r
 
 this application will hopefully be able to do some of that
 
+## Current Sources
+
+Read: 
+- SQLAlchemy compatible sources
+
+Write:
+- Folder on Disk
+- Console
+- Kafka
+
+## Notes
+
+- Currently the Kafka publisher isn't async and can bottleneck here depending on the number of messages being published
+
 ## Running Tests
 
 - TODO add how to trigger test in the right docker container from host commandline
