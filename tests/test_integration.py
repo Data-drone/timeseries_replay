@@ -52,10 +52,12 @@ def test_runner_with_db(dataset, time_start, time_diff):
     
     # test that the trigger_release is working right
     # expect 1
-    date_diff = datetime.datetime.now() - time_start
     start = time.perf_counter()
     
-    runner._trigger_release(result_set=results_test, date_diff=date_diff, replay_start_time=time_start, 
+    code_start = datetime.datetime.now()
+
+    # we need to retink the way that we trigger this....
+    runner._trigger_release(result_set=results_test, code_start=code_start, replay_start_time=time_start, 
     batch=(datetime.datetime(2021, 1, 1, 10, 1, 0), datetime.datetime(2021, 1, 1, 10, 1, 1)), 
     replay_rate=replay_rate)
     
