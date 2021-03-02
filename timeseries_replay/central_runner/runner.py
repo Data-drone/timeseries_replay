@@ -79,14 +79,16 @@ class CentralRunner:
 
                 output_timer = end_output - start_output
                 logger.info("output took {0}".format(output_timer))
+        
+        
+        self.output_system.close()
             
     def _trigger_release(self, result_set, code_start, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
 
         Args:
             result_set (dict): the tuples that will be sent off into the output system
-            code_start (datetime.datetime): The difference between the current time and the start of the dataset
-                                    we need to rebase the timestamps to release at the right intervals
+            code_start (datetime.datetime): the start time of the code itself
             replay_start_time (datetime.datetime):  
             batch (tuple(datetime.datetime, datetime.datetime)): tuple of dates in the batch
             replay_rate (float): rate at which to replay the data back
@@ -99,6 +101,7 @@ class CentralRunner:
 
         # current offset is what the replay time at the time in this trigger operation
         # does current offset need to adjust to replay rate? no it doesn't
+        # there isn't a total_seconds?
         current_offset = (datetime.datetime.now() - code_start).total_seconds() # / replay_rate        
         logger.info('batch_offset is: {0} current_offset is: {1}'.format(batch_offset, current_offset))
 

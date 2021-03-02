@@ -28,8 +28,27 @@ Write:
 
 ```{bash}
 
+# start containers
 docker-compose -f docker_compose/kafka_testing.yml up
+
+
 # still need to test this
 # docker exec -it docker_compose_replay_service_1 /timeseries_replay/pytest
+```
+
+### Cheat notes
+Running individual tests
+
+```{bash}
+
+# run specific test file
+pytest tests/<file>.py
+
+# specific function
+pytest tests/test_integration.py::test_runner_large_file
+
+# specific function with logging to console
+pytest tests/test_integration.py::test_runner_large_file -o log_cli=True
 
 ```
+

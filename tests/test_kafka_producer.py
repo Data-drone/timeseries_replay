@@ -59,6 +59,8 @@ def test_kafka_producer(caplog, dataset, bootstrap_servers='kafka:9092', topic='
 
 
         logger.info('Received message: {}'.format(msg.value().decode('utf-8')))
+
+    publisher.close()
     
     
 

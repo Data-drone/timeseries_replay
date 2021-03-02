@@ -169,6 +169,8 @@ def test_runner_large_file(caplog, replay_rate):
     bootstrap_servers = 'kafka:9092'
     topic = 'test_stream_2'
 
+    logging.debug("starting")
+
     fileconnector = ParquetFileConnector(path=path, time_column=time_column, 
                                     start_date=start_date, end_date=end_date)
 
@@ -188,6 +190,8 @@ def test_runner_large_file(caplog, replay_rate):
     start = time.perf_counter()
     
     runner.run()
+
+    #publisher.close()
 
     end = time.perf_counter()
 
@@ -235,6 +239,8 @@ def test_runner_long_duration(caplog, replay_rate):
     start = time.perf_counter()
     
     runner.run()
+
+    #publisher.close()
 
     end = time.perf_counter()
 

@@ -3,7 +3,8 @@
 Publisher that writes to a kafka topic leveraging the confluent_kafka library
 
 """
-import json
+import orjson as json
+#import json
 import logging
 import datetime
 from timeseries_replay.publishers.BasePublisher import BasePublisher
@@ -31,7 +32,7 @@ class KafkaPublisher(BasePublisher):
         
         logging.info('Initiating kafka Publisher')
         self.producer = Producer({'bootstrap.servers': bootstrap_servers,
-                                    'linger.ms': 1000})
+                                    'linger.ms': 500})
         self.topic = topic
 
         # async event loop
@@ -72,9 +73,11 @@ class KafkaPublisher(BasePublisher):
 
         logger.info('publish start')
 
+        # TODO To make this run well we need to batch it up into groups of up to X messages
+        # we also need to close correctly in the test code
         for dictionary in obj:
             asyncio.run(self._aio_publish_msg(json.dumps(dictionary, default=self.json_cleaner)))
-
+        #asyncio.run(self._aio_publish_msg(json.dumps(obj, default=self.json_cleaner)))
         
         #for dictionary in obj:
         #    result = json.dumps(dictionary, default=self.json_cleaner)            
@@ -100,5 +103,6 @@ class KafkaPublisher(BasePublisher):
             else:
                 self._loop.call_soon_threadsafe(result.set_result, msg)
 
-        self.producer.produce(self.topic, msgbody.encode('utf-8'), on_delivery=ack)
+        # .encode('utf-8')
+        self.producer.produce(self.topic, msgbody, on_delivery=ack)
         return result
