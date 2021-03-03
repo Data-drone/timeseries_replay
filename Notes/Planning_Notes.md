@@ -3,32 +3,26 @@
 Planning notes for what we will need to get this usable
 
 - TODO
-    - Larger proper load test with non-trivial dataset - blocked by AsyncIO publishing
-    - Tackle using AsyncIO for publishing
+    - threading workers so that delays don't compound
 
 ## MVP - Alpha
 
-1)
-Read from SQLAlchemy DB with timestamp column
+1)  Read from SQLAlchemy DB with timestamp column
 Inputs:
-- connection string
-- tablename
-- timestamp column
+    - connection string
+    - tablename
+    - timestamp column
 
-Considerations
-- datatypes? Do we need to do anything or just string json and push?
+2) Starting a job:
+    - start timestamp
+    - end timestamp
+    - replay rate 
+    - batch_size - using replay rate as the batch size for now
 
-Starting a job:
-- start timestamp
-- end timestamp
-- replay rate - need to rethink I bit I think it is right to use it as a batch size
-- batch_size - using replay rate as the batch size for now
-
-2)
-Publisher to console log for now?
-Target is Kafka later on
-Also need to be able to push to files too
-
+2)  Publishers for:
+    - [x] Console 
+    - [x] Kafka
+    - [x] File output
 
 ### Structure:
 
@@ -70,14 +64,18 @@ But sqlalchemy is focused around Object models as the backing db for apps
 
 Do we want to move the creation of the engine into the main execution loop rather than via the database class? - Yes done
 
-tested with SQLite / Postgres
+Tested with SQLite / Postgres
 
 ## Writer Class
 
-Writing down to disk is slowing things down and we need to look at possibly doing that via asyncio - Done
+Current writers:
 
-Publishers - Kafka - Done
-
+    - Console
+    - File
+    - Kafka
+        - Kafka has an overhead with starting a connection to pushing a batch to getting data back.
+        - Need to make the `_triger_release` non-blocking
+        - Need to add in workers for the publisher logic so that a slow `publish` won't result in delay a subsequent publish at the next timestamp 
 ### Things to consider
 
 Returning Data back in a timely manner

@@ -39,7 +39,7 @@ class DataBaseConnector:
     def startup_checks(self):
         """Startup checks to make sure that we have the right inputs
 
-        This function cchecks:
+        This function checks:
             that the table exists
             that the table column exists
             that the table column covers the requested date period

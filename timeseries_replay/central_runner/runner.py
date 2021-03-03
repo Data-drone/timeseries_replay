@@ -51,7 +51,7 @@ class CentralRunner:
         Batches get passed to the Database session for querying
         Query Results get passed to the output system to publish
 
-        TODO - We are using asyncio here so what about non async publishers? - to Check
+        TODO - improving latency when we have too much data will require threading workers
 
         """ 
 
