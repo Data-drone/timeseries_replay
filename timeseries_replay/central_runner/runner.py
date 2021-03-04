@@ -10,8 +10,7 @@ import logging
 import datetime
 from dateutil.parser import *
 import time
-import math
-import asyncio
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -66,22 +65,48 @@ class CentralRunner:
             query_time = end_query - start_query
             logger.info("query took {0}".format(query_time))
             
-            dataset = self._trigger_release(result_set, code_start, self.replay_start_time, 
+            wait_time, dataset = self._trigger_release(result_set, code_start, self.replay_start_time, 
                                                 batch, self.replay_rate)
+
+            t = threading.Thread(name='triogger_release', target=self._threaded_worker(wait_time, dataset, batch))
+            t.start()
             # release dataset to writer here
             # we might need to adjust this to keep running with none?
-            if dataset is not None and type(self.output_system) != str:
+            #if dataset is not None and type(self.output_system) != str:
 
-                start_output = time.perf_counter()
-                self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
+            #    start_output = time.perf_counter()
+
+                # Add wait logic into publish?
+                  # need to adjust each publish? - add a wait executor?
+                
+            #    self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
                 #asyncio.run(self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S")))
-                end_output = time.perf_counter()
+            #    end_output = time.perf_counter()
 
-                output_timer = end_output - start_output
-                logger.info("output took {0}".format(output_timer))
+            #    output_timer = end_output - start_output
+            #    logger.info("output took {0}".format(output_timer))
         
         
         self.output_system.close()
+
+
+    def _threaded_worker(self, wait_time, dataset, batch):
+
+        if wait_time > 0:
+            time.sleep(wait_time)
+
+        if dataset is not None and type(self.output_system) != str:
+
+            start_output = time.perf_counter()
+            
+            self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
+            #asyncio.run(self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S")))
+            end_output = time.perf_counter()
+
+            output_timer = end_output - start_output
+            logger.info("output took {0}".format(output_timer))
+        
+
             
     def _trigger_release(self, result_set, code_start, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
@@ -107,12 +132,12 @@ class CentralRunner:
 
         wait_time = (batch_offset - current_offset)
 
-        logger.info('batch_starts at: {0} we are waiting for {1} secs'.format(batch[0], wait_time))
+        logger.info('batch_starts at: {0} we need wait for {1} secs'.format(batch[0], wait_time))
 
         if wait_time > 0:
             time.sleep(wait_time)
 
-        return result_set
+        return wait_time, result_set
 
     def _batch_generator(self):
         """Setup batches to send to db for querying
