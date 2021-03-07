@@ -91,6 +91,18 @@ class CentralRunner:
 
 
     def _threaded_worker(self, wait_time, dataset, batch):
+        """Threaded worker
+
+        This is a threaded worker that is meant to be non blocking so that a big batch doesn't stop the 
+        next one from starting to publish
+
+
+        Args:
+            wait_time (float): How long to sleep before transmitting the tuple. Wait is done 
+                                in thread so as to not block the main runner function
+            dataset (dict): The dataset that we are emitting should be in dict format for the publisher to process
+            batch (string): An identifier for a batch that is used by some publishers 
+        """
 
         if wait_time > 0:
             time.sleep(wait_time)
@@ -116,11 +128,10 @@ class CentralRunner:
             code_start (datetime.datetime): the start time of the code itself
             replay_start_time (datetime.datetime):  
             batch (tuple(datetime.datetime, datetime.datetime)): tuple of dates in the batch
-            replay_rate (float): rate at which to replay the data back
+            replay_rate (float): rate at which to replay the data back, a setting of 2 means double time
 
         """
         
-        # need to divide by the replay to make sure 2 to double time
         # seconds offset from the replay start 
         batch_offset = (batch[0] - replay_start_time).total_seconds() / replay_rate  
 
