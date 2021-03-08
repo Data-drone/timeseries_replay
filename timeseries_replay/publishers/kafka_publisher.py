@@ -115,11 +115,10 @@ class KafkaPublisher(BasePublisher):
         # TODO To make this run well we need to batch it up into groups of up to X messages
         # we also need to close correctly in the test code
 
-        length_batch = len(obj)
+        batches = self._tumbling_window_batcher(obj, batch_size=batch_size)
 
-
-        for dictionary in obj:
-            asyncio.run(self._aio_publish_msg(json.dumps(dictionary, default=self.json_cleaner)))
+        for batch in batches:
+            asyncio.run(self._aio_publish_msg(json.dumps(batch, default=self.json_cleaner)))
         #asyncio.run(self._aio_publish_msg(json.dumps(obj, default=self.json_cleaner)))
         
         #for dictionary in obj:
