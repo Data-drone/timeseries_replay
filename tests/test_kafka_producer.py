@@ -6,6 +6,76 @@ import time
 
 logger = logging.getLogger(__name__)
 
+@pytest.fixture
+def test_list():
+    return [{'timestamp': '2020-01-01 10:00:00', 'test1': 'A', 'testB': 0 },
+        {'timestamp': '2020-01-01 10:00:01', 'test1': 'B', 'testB': 1 },
+        {'timestamp': '2020-01-01 10:00:02', 'test1': 'C', 'testB': 2 },
+        {'timestamp': '2020-01-01 10:00:03', 'test1': 'D', 'testB': 3 },
+        {'timestamp': '2020-01-01 10:00:04', 'test1': 'E', 'testB': 4 },
+        {'timestamp': '2020-01-01 10:00:05', 'test1': 'F', 'testB': 5 },
+        {'timestamp': '2020-01-01 10:00:06', 'test1': 'G', 'testB': 6 },
+        {'timestamp': '2020-01-01 10:00:07', 'test1': 'H', 'testB': 7 }
+        ]
+
+test_pairs = [(2,2), (4,4)]
+# TODO do we need to have bootstrap server and topic?
+@pytest.mark.parametrize("batch,target", test_pairs)
+def test_tumbling_window_batcher(test_list, batch, target, bootstrap_servers='kafka:9092', topic='test_stream'):
+    """Test the tumbling window batcher under edge conditions
+    
+    Scenarios:
+        - Perfect fit ie list length 10 and windows of 2 - PASS
+
+    """
+
+    publisher = KafkaPublisher(
+        bootstrap_servers=bootstrap_servers,
+        topic=topic
+    )
+
+    for i in publisher._tumbling_window_batcher(obj=test_list, batch_size=batch):
+        assert len(i) == target
+
+
+def test_large_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stream'):
+    """Test the tumbling window batcher under edge conditions
+    
+    Scenarios:
+        - batch_size above length - PASS    
+
+    """
+
+    publisher = KafkaPublisher(
+        bootstrap_servers=bootstrap_servers,
+        topic=topic
+    )
+
+    for i in publisher._tumbling_window_batcher(obj=test_list, batch_size=12):
+        assert len(i) == 8
+
+
+def test_irregular_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stream'):
+    """Test the tumbling window batcher under edge conditions
+    
+    Scenarios:
+        - batch_size and window don't separate evenly    
+
+    """
+
+    publisher = KafkaPublisher(
+        bootstrap_servers=bootstrap_servers,
+        topic=topic
+    )
+
+    for i in publisher._tumbling_window_batcher(obj=test_list, batch_size=3):
+        if len(i) == 3:
+            pass
+        elif len(i) == 2:
+            pass
+        else:
+            assert 0
+
 def test_kafka_producer(caplog, dataset, bootstrap_servers='kafka:9092', topic='test_stream'):
     """Test whether the records are being published
     """

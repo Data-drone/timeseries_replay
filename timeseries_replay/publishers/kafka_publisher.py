@@ -11,6 +11,8 @@ from timeseries_replay.publishers.BasePublisher import BasePublisher
 from confluent_kafka import Producer, KafkaException
 import asyncio
 from threading import Thread
+import numpy as np
+from itertools import islice
 
 logger = logging.getLogger(__name__)
 
@@ -58,15 +60,61 @@ class KafkaPublisher(BasePublisher):
             logger.debug('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
         
     def json_cleaner(self, item):
+        """Json Cleaner function
+
+        Function to make sure we can json dumps datetime properly
+        encodes objects of datetime to string. If we wanted to submit other objs would need to
+        add to this function
+
+        Args:
+            item (obj): item to be encoded for json dumps
+
+        """
         if isinstance(item, datetime.datetime):
             return item.__str__()
 
-    def publish(self, obj, batch_name):
+    def _tumbling_window_batcher(self, obj, batch_size):
+        """Tumbling Window Batcher
+
+        Batches up individual dicts into tumpling windows.
+        ie for batch_size 2, [0,1,2,3,4,5,6] would produce
+        [0,1], [2,3], [4,5], [6] 
+
+        Args:
+            obj (list(dict)): a list of dict objects
+            batch_size (int): the size of batch that we should expect
+
+        """
+
+        # case if the batch_size is greater than the length of object
+        if batch_size > len(obj):
+            return_obj = []
+            for entry in obj:
+                json_obj = json.dumps(entry, default=self.json_cleaner)
+                return_obj.append(json_obj)
+            yield return_obj
+
+        iter_item_list = np.arange(0, len(obj),batch_size)
+        iter_item_list = np.append(iter_item_list, len(obj))
+
+        
+        # case if batch size and length of object divide perfectly
+        for i in range(0, len(iter_item_list)-1):
+            return_obj = []        
+            for entry in islice(obj, iter_item_list[i], iter_item_list[i+1]):
+                json_obj = json.dumps(entry, default=self.json_cleaner)
+                return_obj.append(json_obj)
+    
+            yield return_obj
+
+
+    def publish(self, obj, batch_name, batch_size = 10):
         """Publish Command
 
         Args:
-            obj(list(dict)): a list of dicts to be published tuple by tuple
-            batch_name(str): Does nothing in this case
+            obj(list (dict)): a list of dicts to be published tuple by tuple
+            batch_name (str): Does nothing in this case
+            batch_size (int): number of records to batch up
 
         """
         #self._loop.run_until_complete(self._publish_group(obj))
@@ -75,6 +123,10 @@ class KafkaPublisher(BasePublisher):
 
         # TODO To make this run well we need to batch it up into groups of up to X messages
         # we also need to close correctly in the test code
+
+        length_batch = len(obj)
+
+
         for dictionary in obj:
             asyncio.run(self._aio_publish_msg(json.dumps(dictionary, default=self.json_cleaner)))
         #asyncio.run(self._aio_publish_msg(json.dumps(obj, default=self.json_cleaner)))
