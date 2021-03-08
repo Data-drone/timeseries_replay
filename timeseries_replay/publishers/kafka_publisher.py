@@ -86,18 +86,9 @@ class KafkaPublisher(BasePublisher):
 
         """
 
-        # case if the batch_size is greater than the length of object
-        if batch_size > len(obj):
-            return_obj = []
-            for entry in obj:
-                json_obj = json.dumps(entry, default=self.json_cleaner)
-                return_obj.append(json_obj)
-            yield return_obj
-
         iter_item_list = np.arange(0, len(obj),batch_size)
         iter_item_list = np.append(iter_item_list, len(obj))
 
-        
         # case if batch size and length of object divide perfectly
         for i in range(0, len(iter_item_list)-1):
             return_obj = []        

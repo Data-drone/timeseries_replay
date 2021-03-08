@@ -34,8 +34,12 @@ def test_tumbling_window_batcher(test_list, batch, target, bootstrap_servers='ka
         topic=topic
     )
 
+    counter = 0
     for i in publisher._tumbling_window_batcher(obj=test_list, batch_size=batch):
         assert len(i) == target
+        counter += 1
+    
+    assert counter == len(test_list)/batch
 
 
 def test_large_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stream'):
@@ -51,8 +55,13 @@ def test_large_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stre
         topic=topic
     )
 
+    counter = 0
     for i in publisher._tumbling_window_batcher(obj=test_list, batch_size=12):
         assert len(i) == 8
+        counter += 1
+    
+    # why is this equals to 2?
+    assert counter == 1
 
 
 def test_irregular_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stream'):
@@ -68,6 +77,7 @@ def test_irregular_batch(test_list, bootstrap_servers='kafka:9092', topic='test_
         topic=topic
     )
 
+    counter = 0
     for i in publisher._tumbling_window_batcher(obj=test_list, batch_size=3):
         if len(i) == 3:
             pass
@@ -75,6 +85,9 @@ def test_irregular_batch(test_list, bootstrap_servers='kafka:9092', topic='test_
             pass
         else:
             assert 0
+        counter +=1
+    
+    assert counter == 3
 
 def test_kafka_producer(caplog, dataset, bootstrap_servers='kafka:9092', topic='test_stream'):
     """Test whether the records are being published
