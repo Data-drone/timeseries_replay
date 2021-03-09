@@ -75,7 +75,7 @@ RUN conda env create -f environment.yml
 
 COPY requirements.txt /opt/requirements.txt
 
-RUN echo "conda activate computer_vision"
+RUN echo "conda activate timeseries_replay"
 RUN pip install -r requirements.txt
 
 #RUN conda install --file requirements.txt

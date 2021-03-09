@@ -110,7 +110,7 @@ class KafkaPublisher(BasePublisher):
         """
         #self._loop.run_until_complete(self._publish_group(obj))
 
-        logger.info('publish start')
+        logger.debug('publish start')
 
         # TODO To make this run well we need to batch it up into groups of up to X messages
         # we also need to close correctly in the test code
@@ -126,7 +126,7 @@ class KafkaPublisher(BasePublisher):
         #    self.producer.produce(self.topic, result.encode('utf-8'), callback=self._delivery_report)
         #    self.producer.poll(0.1)
         
-        logger.info('publish call stop')
+        logger.debug('publish call stop')
 
         #self.producer.flush()
 
