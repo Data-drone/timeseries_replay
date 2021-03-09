@@ -69,5 +69,14 @@ RUN wget --quiet "https://github.com/conda-forge/miniforge/releases/download/${m
     conda list tini | grep tini | tr -s ' ' | cut -d ' ' -f 1,2 >> $CONDA_DIR/conda-meta/pinned && \
     conda clean --all -f -y
 
+COPY environment.yml /opt/environment.yml
+
+RUN conda env create -f environment.yml
+
+COPY requirements.txt /opt/requirements.txt
+
+RUN echo "conda activate computer_vision"
+RUN pip install -r requirements.txt
+
 #RUN conda install --file requirements.txt
 CMD tail -f /dev/null

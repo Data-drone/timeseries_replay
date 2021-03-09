@@ -36,6 +36,10 @@ class ConsolePublisher(BasePublisher):
         for dictionary in obj:
             json.dumps(dictionary)
             #print(result)
+
+    def close(self):
+        logger.info('close action')
+
             
 
 class FilePublisher(BasePublisher):
@@ -90,3 +94,6 @@ class FilePublisher(BasePublisher):
         async with aiofiles.open(name, 'w') as fp:
                 data = json.dumps(dump_object, indent = 1, default=self.json_cleaner)
                 await fp.write(data)
+
+    def close(self):
+        logger.info('close action')

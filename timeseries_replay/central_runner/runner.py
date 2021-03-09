@@ -63,7 +63,7 @@ class CentralRunner:
             end_query = time.perf_counter()
 
             query_time = end_query - start_query
-            logger.info("query took {0}".format(query_time))
+            logger.debug("query took {0}".format(query_time))
             
             wait_time, dataset = self._trigger_release(result_set, code_start, self.replay_start_time, 
                                                 batch, self.replay_rate)

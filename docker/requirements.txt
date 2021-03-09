@@ -1,0 +1,4 @@
+confluent_kafka
+pytest-postgresql
+psycopg2-binary==2.8.6
+sphinx-rtd-theme==0.5.1
