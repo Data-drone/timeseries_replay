@@ -112,9 +112,6 @@ class KafkaPublisher(BasePublisher):
 
         logger.debug('publish start')
 
-        # TODO To make this run well we need to batch it up into groups of up to X messages
-        # we also need to close correctly in the test code
-
         batches = self._tumbling_window_batcher(obj, batch_size=batch_size)
 
         for batch in batches:
@@ -147,4 +144,5 @@ class KafkaPublisher(BasePublisher):
 
         # .encode('utf-8')
         self.producer.produce(self.topic, msgbody, on_delivery=ack)
+        
         return result

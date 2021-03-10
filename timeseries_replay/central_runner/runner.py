@@ -88,6 +88,7 @@ class CentralRunner:
         
         
         self.output_system.close()
+        t.join()
 
 
     def _threaded_worker(self, wait_time, dataset, batch):

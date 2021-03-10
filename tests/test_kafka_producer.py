@@ -41,6 +41,8 @@ def test_tumbling_window_batcher(test_list, batch, target, bootstrap_servers='ka
     
     assert counter == len(test_list)/batch
 
+    publisher.close()
+
 
 def test_large_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stream'):
     """Test the tumbling window batcher under edge conditions
@@ -62,6 +64,8 @@ def test_large_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stre
     
     # why is this equals to 2?
     assert counter == 1
+
+    publisher.close()
 
 
 def test_irregular_batch(test_list, bootstrap_servers='kafka:9092', topic='test_stream'):
@@ -88,6 +92,8 @@ def test_irregular_batch(test_list, bootstrap_servers='kafka:9092', topic='test_
         counter +=1
     
     assert counter == 3
+
+    publisher.close()
 
 def test_kafka_producer(caplog, dataset, bootstrap_servers='kafka:9092', topic='test_stream'):
     """Test whether the records are being published
