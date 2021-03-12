@@ -36,10 +36,6 @@ class ConsolePublisher(BasePublisher):
         for dictionary in obj:
             json.dumps(dictionary)
             #print(result)
-
-    def close(self):
-        logger.info('close action')
-
             
 
 class FilePublisher(BasePublisher):
@@ -59,6 +55,19 @@ class FilePublisher(BasePublisher):
         logging.info('Initiating Debug Publisher')
 
     def json_cleaner(self, item):
+        """Clean json formats
+
+        Json dumps doesn't know how to deal with datetime
+
+        Args:
+            item (object): Anytime json dumps doesn't know how to parse something it will
+                            go here. As we see more exotic datatypes may need to expand this
+
+        Returns:
+            item (str): String version for the outputting to json
+
+        """
+
         if isinstance(item, datetime.datetime):
             return item.__str__()
         
@@ -94,6 +103,3 @@ class FilePublisher(BasePublisher):
         async with aiofiles.open(name, 'w') as fp:
                 data = json.dumps(dump_object, indent = 1, default=self.json_cleaner)
                 await fp.write(data)
-
-    def close(self):
-        logger.info('close action')

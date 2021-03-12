@@ -75,9 +75,14 @@ class DataBaseConnector:
     def query_data(self, start, end):
         """Querys a batch
 
+        Queries our database and retrieves the dataset that we need to stream to our output system
+
         Args:
             start (datetime): start of batch
             end (datetime): end of batch
+
+        Returns:
+            parsed_obj (list(dict)): tuples as a list of dict to be released to the output system
 
         """
 

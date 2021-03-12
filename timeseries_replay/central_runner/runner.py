@@ -50,8 +50,6 @@ class CentralRunner:
         Batches get passed to the Database session for querying
         Query Results get passed to the output system to publish
 
-        TODO - improving latency when we have too much data will require threading workers
-
         """ 
 
         code_start = datetime.datetime.now()
@@ -70,33 +68,15 @@ class CentralRunner:
 
             t = threading.Thread(name='triogger_release', target=self._threaded_worker(wait_time, dataset, batch))
             t.start()
-            # release dataset to writer here
-            # we might need to adjust this to keep running with none?
-            #if dataset is not None and type(self.output_system) != str:
-
-            #    start_output = time.perf_counter()
-
-                # Add wait logic into publish?
-                  # need to adjust each publish? - add a wait executor?
-                
-            #    self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S"))
-                #asyncio.run(self.output_system.publish(dataset, batch[0].strftime("%d-%m-%Y_%H-%M-%S")))
-            #    end_output = time.perf_counter()
-
-            #    output_timer = end_output - start_output
-            #    logger.info("output took {0}".format(output_timer))
-        
         
         self.output_system.close()
         t.join()
-
 
     def _threaded_worker(self, wait_time, dataset, batch):
         """Threaded worker
 
         This is a threaded worker that is meant to be non blocking so that a big batch doesn't stop the 
         next one from starting to publish
-
 
         Args:
             wait_time (float): How long to sleep before transmitting the tuple. Wait is done 
@@ -118,8 +98,6 @@ class CentralRunner:
 
             output_timer = end_output - start_output
             logger.info("output took {0}".format(output_timer))
-        
-
             
     def _trigger_release(self, result_set, code_start, replay_start_time, batch, replay_rate):
         """Function to trigger the release of an event to the output system
@@ -131,14 +109,16 @@ class CentralRunner:
             batch (tuple(datetime.datetime, datetime.datetime)): tuple of dates in the batch
             replay_rate (float): rate at which to replay the data back, a setting of 2 means double time
 
+        Returns:
+            wait_time (float): The number of seconds to wait before releasing the result set 
+            result_set (list(dict)): Tuples to stream off to the output system 
+
         """
         
         # seconds offset from the replay start 
         batch_offset = (batch[0] - replay_start_time).total_seconds() / replay_rate  
 
         # current offset is what the replay time at the time in this trigger operation
-        # does current offset need to adjust to replay rate? no it doesn't
-        # there isn't a total_seconds?
         current_offset = (datetime.datetime.now() - code_start).total_seconds() # / replay_rate        
         logger.info('batch_offset is: {0} current_offset is: {1}'.format(batch_offset, current_offset))
 
@@ -154,7 +134,12 @@ class CentralRunner:
     def _batch_generator(self):
         """Setup batches to send to db for querying
 
-        loops through and spits out the start and end times for us to fetch the data from the database 
+        loops through and spits out the start and end times 
+        for us to fetch the data from the data source
+
+        Returns:
+            batch_start (datetime.datetime): The start datetime for querying the dataset 
+            batch_end (datetime.datetime): The end datetime for querying the dataset
 
         """
 

@@ -68,6 +68,9 @@ class ParquetFileConnector:
             start (datetime): start of batch
             end (datetime): end of batch
 
+        Returns:
+            results (list(dict)): Returns a list of dics from our pandas frame for streaming out
+
         """
         start_string =  start.strftime("%Y-%m-%d %H:%M:%S")
         end_string = end.strftime("%Y-%m-%d %H:%M:%S")
