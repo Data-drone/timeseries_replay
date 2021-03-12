@@ -221,7 +221,7 @@ def test_runner_long_duration(caplog, replay_rate):
     path = 'test_data/test_data.parquet'
     time_column = 'requesttimestamp'
     start_date = datetime.datetime(2020, 7, 10, 0, 1, 0)
-    end_date = datetime.datetime(2020, 7, 10, 0, 2, 0)
+    end_date = datetime.datetime(2020, 7, 10, 0, 5, 0)
     replay_rate = replay_rate
     bootstrap_servers = 'kafka:9092'
     topic = 'test_stream_2'
