@@ -21,10 +21,6 @@ class KafkaPublisher(BasePublisher):
 
     Initialises a kafka producer
 
-    #TODO convert to async publisher
-        - Need to start the loop in this class so that we don't need to rewrite the whole thing for async
-        - We can start the loop here but we will need to trigger a close to the polling at somestage
-    
     Args:
         bootstrap_servers(str): a string of kafka brokers in the format <kafka_broker>:<kafka_port>
         topic(str): Kafka topic to write to we assume that this has been created already
@@ -48,6 +44,12 @@ class KafkaPublisher(BasePublisher):
             self.producer.poll(0.1)
 
     def close(self):
+        """Close Routine
+
+        stops the polling thread and rejoins everything together
+
+        """
+
         self._cancelled = True
         self._poll_thread.join()
 
@@ -69,6 +71,9 @@ class KafkaPublisher(BasePublisher):
         Args:
             item (obj): item to be encoded for json dumps
 
+        Returns:
+            item (str): string version of the object for json dumps to use
+
         """
         if isinstance(item, datetime.datetime):
             return item.__str__()
@@ -84,6 +89,9 @@ class KafkaPublisher(BasePublisher):
             obj (list(dict)): a list of dict objects
             batch_size (int): the size of batch that we should expect
 
+        Returns:
+            return_obj (list(str)): returns list of json strings grouped 
+                                    together into tumbling windows
         """
 
         iter_item_list = np.arange(0, len(obj),batch_size)
@@ -108,7 +116,6 @@ class KafkaPublisher(BasePublisher):
             batch_size (int): number of records to batch up
 
         """
-        #self._loop.run_until_complete(self._publish_group(obj))
 
         logger.debug('publish start')
 
@@ -116,23 +123,19 @@ class KafkaPublisher(BasePublisher):
 
         for batch in batches:
             asyncio.run(self._aio_publish_msg(json.dumps(batch, default=self.json_cleaner)))
-        #asyncio.run(self._aio_publish_msg(json.dumps(obj, default=self.json_cleaner)))
-        
-        #for dictionary in obj:
-        #    result = json.dumps(dictionary, default=self.json_cleaner)            
-        #    self.producer.produce(self.topic, result.encode('utf-8'), callback=self._delivery_report)
-        #    self.producer.poll(0.1)
         
         logger.debug('publish call stop')
 
-        #self.producer.flush()
-
-    #async def _publish_group(self, msg_bunch):
-    #    coros = [self._aio_publish_msg(json.dumps(msgdict, default=self.json_cleaner)) for msgdict in msg_bunch ]
-    #    await asyncio.gather(*coros)
-
     async def _aio_publish_msg(self, msgbody):
         """asyncio publisher
+
+        Args:
+            msgbody (str): the body of the message to send to kafka
+                            will be a tumbling window of entries
+
+        Returns:
+            result (str): Kafka reply from msg being sent
+
         """
         result = self._loop.create_future()
 
@@ -144,5 +147,5 @@ class KafkaPublisher(BasePublisher):
 
         # .encode('utf-8')
         self.producer.produce(self.topic, msgbody, on_delivery=ack)
-        
+
         return result

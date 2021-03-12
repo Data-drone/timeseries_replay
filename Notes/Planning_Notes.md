@@ -3,8 +3,10 @@
 Planning notes for what we will need to get this usable
 
 - TODO
-    - threading workers so that delays don't compound
-
+    - fix docker image to install pip bits correctly
+    - get publisher tests written
+    - need to write some examples on usage
+    - install script
 ## MVP - Alpha
 
 1)  Read from SQLAlchemy DB with timestamp column
