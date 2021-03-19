@@ -23,7 +23,7 @@ services:
     build:
       context: ../
       dockerfile:  docker/timeseries_replay
-    image: test_timeseries_replay:latest
+    image: timeseries_replay:latest
     volumes:
       - ..:/code
     depends_on:

@@ -18,8 +18,6 @@ RUN apt-get update \
     fonts-liberation \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-
-
 ## install Conda for parquet and confluent kafka
 # Conda version
 ARG conda_version="4.9.2"
@@ -41,10 +39,10 @@ ARG miniforge_checksum="49dddb3998550e40adc904dae55b0a2aeeb0bd9fc4306869cc4a600e
 
 # Configure environment
 ENV CONDA_DIR=/opt/conda \
-    SHELL=/bin/bash \
-    LC_ALL=en_US.UTF-8 \
-    LANG=en_US.UTF-8 \
-    LANGUAGE=en_US.UTF-8
+    SHELL=/bin/bash 
+    #LC_ALL=en_US.UTF-8 \
+    #LANG=en_US.UTF-8 \
+    #LANGUAGE=en_US.UTF-8
 ENV PATH=$CONDA_DIR/bin:$PATH \
     HOME=/home/$NB_USER \
     CONDA_VERSION="${conda_version}" \
@@ -73,10 +71,13 @@ COPY environment.yml /opt/environment.yml
 
 RUN conda env create -f environment.yml
 
+# Initialize conda in bash config fiiles:
+RUN conda init bash
+
 COPY requirements.txt /opt/requirements.txt
 
-RUN echo "conda activate timeseries_replay"
-RUN pip install -r requirements.txt
+#RUN echo "conda activate timeseries_replay"
+RUN /opt/conda/envs/timeseries_replay/bin/pip install -r requirements.txt
 
 #RUN conda install --file requirements.txt
 CMD tail -f /dev/null
