@@ -5,25 +5,26 @@ Planning notes for what we will need to get this usable
 - TODO
     - need to write some examples on usage
     - install script
+    - I don't think we need the start_date / end_date as part of reader initialisation?
 
 - Later TODO
     - get more publisher tests written
 
 ## MVP - Alpha
 
-1)  Read from SQLAlchemy DB with timestamp column
+1)  [x] Read from SQLAlchemy DB with timestamp column
 Inputs:
-    - connection string
-    - tablename
-    - timestamp column
+    - [x] connection string
+    - [x] tablename
+    - [x] timestamp column
 
-2) Starting a job:
-    - start timestamp
-    - end timestamp
-    - replay rate 
-    - batch_size - using replay rate as the batch size for now
+2) [x] Starting a job:
+    - [x] start timestamp
+    - [x] end timestamp
+    - [x] replay rate 
+    - [x] batch_size - using replay rate as the batch size for now
 
-2)  Publishers for:
+2) [x] Publishers for:
     - [x] Console 
     - [x] Kafka
     - [x] File output

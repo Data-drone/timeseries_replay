@@ -8,10 +8,12 @@ Sometimes it maybe useful to take an existing events table with timestamps and r
 
 this application will hopefully be able to do some of that
 
+See examples folder for some example code
 ## Current Sources
 
 Read: 
 - SQLAlchemy compatible sources
+- Parquet File
 
 Write:
 - Folder on Disk
@@ -20,7 +22,7 @@ Write:
 
 ## Notes
 
-- Currently the Kafka publisher isn't async and can bottleneck here depending on the number of messages being published
+- If there are too many messages in parallel can bottleneck
 
 ## Running Tests
 
