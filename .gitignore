@@ -129,4 +129,9 @@ dmypy.json
 .pyre/
 
 # testing folders
+/test_tmp
 /test_tmp/*
+/tmp
+
+# dev env
+.vscode

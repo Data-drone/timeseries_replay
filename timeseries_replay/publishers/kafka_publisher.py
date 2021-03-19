@@ -27,6 +27,7 @@ class KafkaPublisher(BasePublisher):
     """
 
     def __init__(self, bootstrap_servers, topic):
+        super().__init__()
         
         logging.info('Initiating kafka Publisher')
         self.producer = Producer({'bootstrap.servers': bootstrap_servers,
@@ -60,23 +61,6 @@ class KafkaPublisher(BasePublisher):
             logger.error('Message delivery failed: {}'.format(err))
         else:
             logger.debug('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
-        
-    def json_cleaner(self, item):
-        """Json Cleaner function
-
-        Function to make sure we can json dumps datetime properly
-        encodes objects of datetime to string. If we wanted to submit other objs would need to
-        add to this function
-
-        Args:
-            item (obj): item to be encoded for json dumps
-
-        Returns:
-            item (str): string version of the object for json dumps to use
-
-        """
-        if isinstance(item, datetime.datetime):
-            return item.__str__()
 
     def _tumbling_window_batcher(self, obj, batch_size):
         """Tumbling Window Batcher

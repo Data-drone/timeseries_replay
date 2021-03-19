@@ -1,14 +1,28 @@
-"""Example Script
+"""Basic Example
+
+Read from file and spit to console
 
 """
 
+
+from timeseries_replay.database_connector.file_connector import ParquetFileConnector
+from timeseries_replay.central_runner.runner import CentralRunner
+from timeseries_replay.publishers.console_publisher import ConsolePublisher
 import datetime
 
-db_connection_string = 'postgresql+psycopg2://<username>:<password>@<database_host>:<db_port>/<database>'
-timeseries_table_to_stream = '<your table>'
-timecolumn = '<your timestamp column name>'
-start_date = datetime.datetime(2020, 5, 17, 13, 0, 5)
-end_date = datetime.datetime(2020, 5, 17, 13, 1, 5)
-replay_rate = 1.0 # Real time
-kafka_bootstrap_servers = '<kafka_broker>:<kafka_port>'
-output_topic = '<kafka topic to output tuples to>'
+reader = ParquetFileConnector(path='test_data/test_data.parquet',
+                            time_column='requesttimestamp',
+                            start_date=datetime.datetime(2020, 7, 10, 0, 1, 0),
+                            end_date=datetime.datetime(2020, 7, 10, 0, 3, 0))
+
+reader.startup_checks()
+
+publisher = ConsolePublisher()
+
+runner = CentralRunner(db_connection=reader,
+                        output_system=publisher,
+                        start_time=datetime.datetime(2020, 7, 10, 0, 1, 0),
+                        end_time=datetime.datetime(2020, 7, 10, 0, 3, 0),
+                        replay_rate=1)
+
+runner.run()

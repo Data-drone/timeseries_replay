@@ -1,6 +1,7 @@
 """A template Publisher class of what methods we need for the runner
 """
 import logging
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,23 @@ class BasePublisher:
 
     def __init__(self):
         pass
+
+    def json_cleaner(self, item):
+        """Clean json formats
+
+        Json dumps doesn't know how to deal with datetime
+
+        Args:
+            item (object): Anytime json dumps doesn't know how to parse something it will
+                            go here. As we see more exotic datatypes may need to expand this
+
+        Returns:
+            item (str): String version for the outputting to json
+
+        """
+
+        if isinstance(item, datetime.datetime):
+            return item.__str__()
 
     def publish(self, obj, batch_name):
         """Publish Method

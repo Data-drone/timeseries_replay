@@ -22,6 +22,7 @@ class ConsolePublisher(BasePublisher):
     """
 
     def __init__(self):
+        super().__init__()
         
         logging.info('Initiating Console Publisher')
         
@@ -34,9 +35,8 @@ class ConsolePublisher(BasePublisher):
 
         """
         for dictionary in obj:
-            json.dumps(dictionary)
-            #print(result)
-            
+            result = json.dumps(dictionary, default=self.json_cleaner)
+            print(result)
 
 class FilePublisher(BasePublisher):
     """File Publisher
@@ -49,27 +49,11 @@ class FilePublisher(BasePublisher):
     """
 
     def __init__(self, output_folder='test_tmp'):
+        super().__init__()
 
         self.output_folder = output_folder
         
         logging.info('Initiating Debug Publisher')
-
-    def json_cleaner(self, item):
-        """Clean json formats
-
-        Json dumps doesn't know how to deal with datetime
-
-        Args:
-            item (object): Anytime json dumps doesn't know how to parse something it will
-                            go here. As we see more exotic datatypes may need to expand this
-
-        Returns:
-            item (str): String version for the outputting to json
-
-        """
-
-        if isinstance(item, datetime.datetime):
-            return item.__str__()
         
     def publish(self, obj, batch_name):
         """Publish Data
