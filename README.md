@@ -6,10 +6,9 @@ This makes it really hard to architect for and test.
 Generating fake data to load test often fails to replicate real life scenarios.
 Sometimes it maybe useful to take an existing events table with timestamps and replay those at the same rate (or perhaps sped up rate)
 
-this application will hopefully be able to do some of that
+See examples [folder](https://github.com/Data-drone/timeseries_replay/tree/main/examples) for some how to use
 
-See examples folder for some example code
-## Current Sources
+## Current Available Sources
 
 Read: 
 - SQLAlchemy compatible sources
@@ -38,11 +37,10 @@ docker-compose -f docker_compose/kafka_testing.yml up
 # docker exec -it docker_compose_replay_service_1 /timeseries_replay/pytest
 ```
 
-### Cheat notes
+### Testing Notes
+
 Running individual tests
-
 ```{bash}
-
 # run specific test file
 pytest tests/<file>.py
 
